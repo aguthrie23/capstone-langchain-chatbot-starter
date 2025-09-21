@@ -1,7 +1,20 @@
 from flask import Flask, render_template
 from flask import request, jsonify, abort
 
-from langchain.llms import Cohere
+from langchain_community.llms import Cohere
+from langchain_core.prompts import PromptTemplate
+from langchain.chains import SequentialChain
+from langchain.prompts.chat import (
+    ChatPromptTemplate,
+    SystemMessagePromptTemplate,
+    HumanMessagePromptTemplate,
+)
+
+from langchain_cohere import ChatCohere
+from langchain.prompts import ChatPromptTemplate
+
+
+import os
 
 app = Flask(__name__)
 
@@ -15,8 +28,22 @@ def search_knowledgebase(message):
     return sources
 
 def answer_as_chatbot(message):
-    # TODO: Write your code here
-    return ""
+
+    api_key = os.environ.get("COHERE_API_KEY")
+    if not api_key:
+        return "Cohere API key not found. Please set COHERE_API_KEY in your .env file."
+    chat = ChatCohere(cohere_api_key=api_key)
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are an expert in Quantum Computing. Answer the user's question as helpfully as possible."),
+        ("human", "{question}")
+    ])
+    chain = prompt | chat
+    try:
+        res = chain.invoke({"question": message})
+    except Exception as e:
+        return f"Error communicating with Cohere Chat API: {e}"
+    return res.content if hasattr(res, "content") else str(res)
+
 
 @app.route('/kbanswer', methods=['POST'])
 def kbanswer():
