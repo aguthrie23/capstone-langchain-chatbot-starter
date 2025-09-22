@@ -1,26 +1,45 @@
 from flask import Flask, render_template
 from flask import request, jsonify, abort
+from dotenv import load_dotenv
+import os
 
 from langchain_community.llms import Cohere
 from langchain_core.prompts import PromptTemplate
-from langchain.chains import SequentialChain
+from langchain.chains import SequentialChain, RetrievalQA
 from langchain.prompts.chat import (
     ChatPromptTemplate,
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
-
-from langchain_cohere import ChatCohere
-from langchain.prompts import ChatPromptTemplate
+from langchain_cohere import CohereEmbeddings, ChatCohere
+from langchain_chroma import Chroma
 
 
 import os
 
 app = Flask(__name__)
 
+load_dotenv()
+
+def load_db():
+    try:
+        embeddings = CohereEmbeddings(cohere_api_key=os.environ["COHERE_API_KEY"], model="embed-english-v3.0")
+        vectordb = Chroma(persist_directory='db', embedding_function=embeddings)
+        qa = RetrievalQA.from_chain_type(
+            llm=Cohere(),
+            chain_type="refine",
+            retriever=vectordb.as_retriever(),
+            return_source_documents=True
+        )
+        return qa
+    except Exception as e:
+        print("Error:", e)
+
+qa = load_db()
+
 def answer_from_knowledgebase(message):
-    # TODO: Write your code here
-    return ""
+    res = qa({"query": message})
+    return res['result']
 
 def search_knowledgebase(message):
     # TODO: Write your code here
