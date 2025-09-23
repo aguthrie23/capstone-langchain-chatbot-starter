@@ -38,8 +38,15 @@ def load_db():
 qa = load_db()
 
 def answer_from_knowledgebase(message):
-    res = qa({"query": message})
-    return res['result']
+    try:
+        res = qa.invoke({"query": message})
+        if not res or (isinstance(res, dict) and not res.get('result')):
+            return "No relevant information found in the knowledgebase."
+        return res['result'] if isinstance(res, dict) and 'result' in res else str(res)
+    except IndexError:
+        return "No relevant information found in the knowledgebase."
+    except Exception as e:
+        return f"Error searching knowledgebase: {e}"
 
 def search_knowledgebase(message):
     # TODO: Write your code here
@@ -66,12 +73,14 @@ def answer_as_chatbot(message):
 
 @app.route('/kbanswer', methods=['POST'])
 def kbanswer():
-    # TODO: Write your code here
+    message = request.json['message']
     
-    # call answer_from_knowledebase(message)
-        
+    # Generate a response
+    response_message = answer_from_knowledgebase(message)
+    
     # Return the response as JSON
-    return 
+    return jsonify({'message': response_message}), 200
+
 
 @app.route('/search', methods=['POST'])
 def search():    
