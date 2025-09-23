@@ -116,10 +116,19 @@ def index():
     return render_template("index.html", title="")
 
 if __name__ == "__main__":
-    def print_knowledgebase_count():
+    def inspect_knowledgebase():
         embeddings = CohereEmbeddings(cohere_api_key=os.environ["COHERE_API_KEY"], model="embed-english-v3.0")
         vectordb = Chroma(persist_directory='db', embedding_function=embeddings)
         print("Number of documents in knowledgebase:", vectordb._collection.count())
+        # Print collection metadata if available
+        metadata = getattr(vectordb._collection, 'metadata', None)
+        print("Collection metadata:", metadata if metadata is not None else "No metadata available.")
+        # Print up to 3 sample documents if any
+        try:
+            docs = vectordb._collection.get(limit=3)
+            print("Sample documents:", docs)
+        except Exception as e:
+            print("Could not retrieve sample documents:", e)
 
-    print_knowledgebase_count()
+    inspect_knowledgebase()
     app.run()
