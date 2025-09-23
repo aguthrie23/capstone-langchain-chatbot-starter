@@ -60,9 +60,15 @@ def answer_from_knowledgebase(message):
         return f"Error searching knowledgebase: {e}"
 
 def search_knowledgebase(message):
-    # TODO: Write your code here
-    sources = ""
-    return sources
+    try:
+        res = qa({"query": message})
+        sources = ""
+        for count, source in enumerate(res['source_documents'], 1):
+            sources += "Source " + str(count) + "\n"
+            sources += source.page_content + "\n"
+        return sources
+    except Exception as e:
+        print("Error:", e)
 
 def answer_as_chatbot(message):
 
@@ -95,11 +101,13 @@ def kbanswer():
 
 @app.route('/search', methods=['POST'])
 def search():    
-    # Search the knowledgebase and generate a response
-    # (call search_knowledgebase())
+    message = request.json['message']
+    
+    # Generate a response
+    response_message = search_knowledgebase(message)
     
     # Return the response as JSON
-    return
+    return jsonify({'message': response_message}), 200
 
 @app.route('/answer', methods=['POST'])
 def answer():
