@@ -1,32 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thinkbot</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="static/style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            min-height: 100vh;
+        }
+        .chat-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            height: 60vh;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .user-message, .assistant-message {
+            border-radius: 18px;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 0.5rem;
+            max-width: 80%;
+            word-break: break-word;
+            font-size: 1rem;
+        }
+        .user-message {
+            background: #d1e7dd;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .assistant-message {
+            background: #f8d7da;
+            align-self: flex-start;
+            margin-right: auto;
+        }
+        .timestamp {
+            font-size: 0.8rem;
+            color: #888;
+            margin-left: 0.5rem;
+        }
+        .chat-footer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        #message-input {
+            flex: 1 1 200px;
+            border-radius: 18px;
+            border: 1px solid #ccc;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+        #send-btn, #clear-btn {
+            border-radius: 18px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 45vh;
+                max-height: 45vh;
+                padding: 1rem;
+            }
+            #message-input {
+                font-size: 0.95rem;
+            }
+            #send-btn, #clear-btn {
+                font-size: 0.95rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .chat-container {
+                height: 35vh;
+                max-height: 35vh;
+                padding: 0.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div id="chat-container" class="chat-container"></div>
-        <div class="row">
-            <div class="col">
-                <div>
-                    <select class="form-control" id="function-select">
-                        <option value="answer">Answer as Chatbot</option>
-                        <option value="kbanswer">Answer from Knowledgebase</option>
-                        <option value="search">Search Knowledgebase</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col">
-                <div class="input-group-append">
-                    <input type="text" id="message-input" placeholder="Type your message here...">
-                    <button id="send-btn" class="btn btn-primary">Send</button>
-                </div>
+    <div class="container py-4 d-flex flex-column align-items-center justify-content-center" style="min-height:100vh;">
+        <div class="w-100" style="max-width: 700px;">
+            <h2 class="text-center mb-4 font-weight-bold" style="letter-spacing:1px;">🤖 Thinkbot</h2>
+            <div id="chat-container" class="chat-container d-flex flex-column"></div>
+            <div class="chat-footer mt-2">
+                <select class="form-control" id="function-select" style="min-width:260px;max-width:100%;">
+                    <option value="answer">Answer as Chatbot</option>
+                    <option value="kbanswer">Answer from Knowledgebase</option>
+                    <option value="search">Search Knowledgebase</option>
+                </select>
+                <input type="text" id="message-input" placeholder="Type your message here..." autocomplete="off" />
+                <button id="send-btn" class="btn btn-primary">Send</button>
+                <button id="clear-btn" class="btn btn-outline-secondary">Clear</button>
             </div>
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
     <script src="static/main.js"></script>
 </body>
