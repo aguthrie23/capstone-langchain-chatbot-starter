@@ -3,7 +3,6 @@ from flask import request, jsonify, abort
 from dotenv import load_dotenv
 import os
 
-from langchain_community.llms import Cohere
 from langchain_core.prompts import PromptTemplate
 from langchain.chains import SequentialChain, RetrievalQA
 from langchain.prompts.chat import (
@@ -26,7 +25,7 @@ def load_db():
         embeddings = CohereEmbeddings(cohere_api_key=os.environ["COHERE_API_KEY"], model="embed-english-v3.0")
         vectordb = Chroma(persist_directory='db', embedding_function=embeddings)
         qa = RetrievalQA.from_chain_type(
-            llm=Cohere(),
+            llm=ChatCohere(cohere_api_key=os.environ["COHERE_API_KEY"]),
             chain_type="refine",
             retriever=vectordb.as_retriever(),
             return_source_documents=True
@@ -37,15 +36,27 @@ def load_db():
 
 qa = load_db()
 
+# def answer_from_knowledgebase(message):
+#     try:
+#         res = qa.invoke({"query": message})
+#         if not res or (isinstance(res, dict) and not res.get('result')):
+#             return "No relevant information found in the knowledgebase."
+#         return res['result'] if isinstance(res, dict) and 'result' in res else str(res)
+#     except IndexError:
+#         return "No relevant information found in the knowledgebase."
+#     except Exception as e:
+#         return f"Error searching knowledgebase: {e}"
+
 def answer_from_knowledgebase(message):
     try:
         res = qa.invoke({"query": message})
-        if not res or (isinstance(res, dict) and not res.get('result')):
+        # Check for empty or missing result
+        if not res or (isinstance(res, dict) and (not res.get('result') or res.get('result') == '')):
             return "No relevant information found in the knowledgebase."
         return res['result'] if isinstance(res, dict) and 'result' in res else str(res)
-    except IndexError:
-        return "No relevant information found in the knowledgebase."
     except Exception as e:
+        if 'list index out of range' in str(e):
+            return "No relevant information found in the knowledgebase."
         return f"Error searching knowledgebase: {e}"
 
 def search_knowledgebase(message):
@@ -105,4 +116,10 @@ def index():
     return render_template("index.html", title="")
 
 if __name__ == "__main__":
+    def print_knowledgebase_count():
+        embeddings = CohereEmbeddings(cohere_api_key=os.environ["COHERE_API_KEY"], model="embed-english-v3.0")
+        vectordb = Chroma(persist_directory='db', embedding_function=embeddings)
+        print("Number of documents in knowledgebase:", vectordb._collection.count())
+
+    print_knowledgebase_count()
     app.run()
